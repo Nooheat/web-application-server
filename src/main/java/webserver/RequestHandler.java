@@ -1,12 +1,16 @@
 package webserver;
 
+import db.DataBase;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpRequestUtils;
 
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -34,19 +38,35 @@ public class RequestHandler extends Thread {
                 return;
             }
 
-            if ("/index.html".equals(splited[1])) {
-                byte[] body = Files.readAllBytes(new File("./webapp/index.html").toPath());
-                response200Header(dos, body.length);
-                responseBody(dos, body);
+            String url = splited[1];
+
+            if ("/index.html".equals(HttpRequestUtils.parsePlainUrl(url))) {
+                response200(dos, Files.readAllBytes(new File("./webapp/index.html").toPath()));
                 return;
             }
 
+            if ("/user/form.html".equals(HttpRequestUtils.parsePlainUrl(url))) {
+                response200(dos, Files.readAllBytes(new File("./webapp/user/form.html").toPath()));
+                return;
+            }
+
+            if ("/user/create".equals(HttpRequestUtils.parsePlainUrl(url))) {
+                Map<String, String> queryMap = HttpRequestUtils.parseQueryStringFromUrl(url);
+                User user = new User(queryMap.get("userId"), queryMap.get("password"),
+                        queryMap.get("name"), queryMap.get("email"));
+                DataBase.addUser(user);
+                response200(dos, user.toString().getBytes());
+            }
             byte[] body = "Hello World".getBytes();
-            response200Header(dos, body.length);
-            responseBody(dos, body);
+            response200(dos, body);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private void response200(DataOutputStream dos, byte[] body) {
+        response200Header(dos, body.length);
+        responseBody(dos, body);
     }
 
     private void response400Header(DataOutputStream dos) {
