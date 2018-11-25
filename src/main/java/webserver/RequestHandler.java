@@ -4,6 +4,7 @@ import db.DataBase;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import template.Templater;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
@@ -76,6 +79,32 @@ public class RequestHandler extends Thread {
                 HttpResponse response = HttpResponse.redirect("/index.html")
                         .addCookie("logined", false)
                         .build();
+                dos.writeBytes(response.toString());
+                return;
+            }
+
+            if ("/user/list".equals(request.getPath()) && request.getMethod() == HttpMethod.GET) {
+                List<User> users = new ArrayList<>(DataBase.findAll());
+                StringBuilder userElements = new StringBuilder();
+                for (int i = 0; i < users.size(); i++) {
+                    User user = users.get(i);
+
+                    userElements.append("<tr>\n");
+                    userElements.append("   <th scope=\"row\">" + (i + 1) + "</th>");
+                    userElements.append("   <td>" + users.get(i).getUserId() + "</td>");
+                    userElements.append("   <td>" + user.getName() + "</td>");
+                    userElements.append("   <td>" + user.getEmail() + "</td>");
+                    userElements.append("   <td><a href=\"#\" class=\"btn btn-success\" role=\"button\">수정</a></td>\n");
+                    userElements.append("</tr>\n");
+                }
+
+                String domString = new Templater("./webapp/user/list.html")
+                        .addObject("users", userElements.toString()).template();
+                HttpResponse response = HttpResponse.ok()
+                        .header(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8")
+                        .body(domString)
+                        .build();
+                System.out.println(response.toString());
                 dos.writeBytes(response.toString());
                 return;
             }

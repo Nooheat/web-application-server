@@ -58,7 +58,7 @@ public class HttpResponse<T> {
             headers.merge(
                     "Set-Cookie",
                     key + "=" + value.toString(),
-                    (existingValue, newValue) -> existingValue + "&" + newValue
+                    (existingValue, newValue) -> existingValue + ";" + newValue
             );
             return this;
         }

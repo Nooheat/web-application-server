@@ -14,6 +14,7 @@ public class HttpRequest {
     private String path;
     private HttpMethod method;
     private Map<String, String> queries;
+    private Map<String, String> cookies;
     private Map<String, String> headers;
     private Map<String, String> body;
 
@@ -30,9 +31,14 @@ public class HttpRequest {
     private void parseRequest(BufferedReader br) throws Exception {
         parsePathAndMethod(br);
         parseHeaders(br);
+        parseCookies();
         if (!(this.method == HttpMethod.GET)) {
             parseBody(br);
         }
+    }
+
+    private void parseCookies() {
+        this.cookies = HttpRequestUtils.parseCookies(getHeader(HttpHeader.COOKIE));
     }
 
     private void parseBody(BufferedReader br) throws IOException {
@@ -84,6 +90,10 @@ public class HttpRequest {
 
     public String getQuery(String key) {
         return queries.get(key);
+    }
+
+    public String getHeader(HttpHeader header) {
+        return getHeader(header.toString());
     }
 
     public String getHeader(String key) {
