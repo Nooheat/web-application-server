@@ -4,13 +4,10 @@ import db.DataBase;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.HttpRequestUtils;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -29,37 +26,29 @@ public class RequestHandler extends Thread {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             DataOutputStream dos = new DataOutputStream(out);
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            String urlLine = br.readLine();
-            String[] splited = urlLine.split(" ", 3);
-
-            if (splited.length != 3) {
-                response400Header(dos);
-                return;
-            }
-
-            String url = splited[1];
-
-            if ("/index.html".equals(HttpRequestUtils.parsePlainUrl(url))) {
+            HttpRequest request = HttpRequest.of(in);
+            if ("/index.html".equals(request.getPath())) {
                 response200(dos, Files.readAllBytes(new File("./webapp/index.html").toPath()));
                 return;
             }
 
-            if ("/user/form.html".equals(HttpRequestUtils.parsePlainUrl(url))) {
+            if ("/user/form.html".equals(request.getPath())) {
                 response200(dos, Files.readAllBytes(new File("./webapp/user/form.html").toPath()));
                 return;
             }
 
-            if ("/user/create".equals(HttpRequestUtils.parsePlainUrl(url))) {
-                Map<String, String> queryMap = HttpRequestUtils.parseQueryStringFromUrl(url);
-                User user = new User(queryMap.get("userId"), queryMap.get("password"),
-                        queryMap.get("name"), queryMap.get("email"));
+            if ("/user/create".equals(request.getPath()) && request.getMethod() == HTTPMethod.POST) {
+                User user = new User(request.getParam("userId"), request.getParam("password"),
+                        request.getParam("name"), request.getParam("email"));
                 DataBase.addUser(user);
                 response200(dos, user.toString().getBytes());
+                return;
             }
+
             byte[] body = "Hello World".getBytes();
             response200(dos, body);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             log.error(e.getMessage());
         }
     }
@@ -67,16 +56,6 @@ public class RequestHandler extends Thread {
     private void response200(DataOutputStream dos, byte[] body) {
         response200Header(dos, body.length);
         responseBody(dos, body);
-    }
-
-    private void response400Header(DataOutputStream dos) {
-        try {
-            dos.writeBytes("HTTP/1.1 400 BadRequest \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
     }
 
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {

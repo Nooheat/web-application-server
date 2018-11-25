@@ -10,19 +10,11 @@ import java.util.stream.Collectors;
 public class HttpRequestUtils {
 
     /**
-     * @param url URL
+     * @param payload 은 field1=value1&field2=value2 형식임
      * @return
      */
-    public static Map<String, String> parseQueryStringFromUrl(String url) {
-        return parseQueryString(url.split("\\?", 2)[1]);
-    }
-
-    /**
-     * @param queryString 은 URL에서 ? 이후에 전달되는 field1=value1&field2=value2 형식임
-     * @return
-     */
-    public static Map<String, String> parseQueryString(String queryString) {
-        return parseValues(queryString, "&");
+    public static Map<String, String> parsePayload(String payload) {
+        return parseValues(payload, "&");
     }
 
     /**
@@ -60,8 +52,8 @@ public class HttpRequestUtils {
         return getKeyValue(header, ": ");
     }
 
-    public static String parsePlainUrl(String url) {
-        return url.split("\\?", 2)[0];
+    public static boolean hasQueryString(String s) {
+        return s.contains("?");
     }
 
     public static class Pair {
