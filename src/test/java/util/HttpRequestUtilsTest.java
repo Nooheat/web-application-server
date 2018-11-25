@@ -1,7 +1,7 @@
 package util;
 
 import org.junit.Test;
-import util.HttpRequestUtils.Pair;
+import webserver.Pair;
 
 import java.util.Map;
 

@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class HttpRequest {
     private String path;
-    private HTTPMethod method;
+    private HttpMethod method;
     private Map<String, String> queries;
     private Map<String, String> headers;
     private Map<String, String> body;
@@ -30,7 +30,7 @@ public class HttpRequest {
     private void parseRequest(BufferedReader br) throws Exception {
         parsePathAndMethod(br);
         parseHeaders(br);
-        if (!(this.method == HTTPMethod.GET)) {
+        if (!(this.method == HttpMethod.GET)) {
             parseBody(br);
         }
     }
@@ -45,7 +45,7 @@ public class HttpRequest {
         String urlAndMethodLine = br.readLine();
         String[] splited = urlAndMethodLine.split(" ", 3);
 
-        method = HTTPMethod.valueFrom(splited[0]).orElseThrow(HttpRequestParsingException::new);
+        method = HttpMethod.valueFrom(splited[0]).orElseThrow(HttpRequestParsingException::new);
 
         if (HttpRequestUtils.hasQueryString(splited[1])) {
             int index = splited[1].indexOf("?");
@@ -64,7 +64,7 @@ public class HttpRequest {
         String line = br.readLine();
 
         while (line != null && !"".equals(line)) {
-            HttpRequestUtils.Pair pair = HttpRequestUtils.parseHeader(line);
+            Pair pair = HttpRequestUtils.parseHeader(line);
             headers.put(pair.getKey(), pair.getValue());
             line = br.readLine();
         }
@@ -78,7 +78,7 @@ public class HttpRequest {
         return path;
     }
 
-    public HTTPMethod getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 
