@@ -1,4 +1,4 @@
-package webserver;
+package util;
 
 public class Pair {
     String key;

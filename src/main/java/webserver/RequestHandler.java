@@ -1,6 +1,7 @@
 package webserver;
 
 import db.DataBase;
+import http.*;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,14 +54,14 @@ public class RequestHandler extends Thread {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             DataOutputStream dos = new DataOutputStream(out);
             HttpRequest request = HttpRequest.of(in);
+            HttpResponse response = HttpResponse.of(out);
 
 
             if ("/user/create".equals(request.getPath()) && request.getMethod() == HttpMethod.POST) {
                 User user = new User(request.getParam("userId"), request.getParam("password"),
                         request.getParam("name"), request.getParam("email"));
                 DataBase.addUser(user);
-                HttpResponse response = HttpResponse.redirect("/index.html").build();
-                dos.writeBytes(response.toString());
+                response.redirect("/index.html");
                 return;
             }
 
@@ -69,17 +70,10 @@ public class RequestHandler extends Thread {
                         .filter(user -> user.matchPassword(request.getParam("password")))
                         .isPresent();
                 if (loginSucceed) {
-                    HttpResponse response = HttpResponse.redirect("/index.html")
-                            .addCookie("logined", true)
-                            .build();
-                    dos.writeBytes(response.toString());
+                    response.addCookie("logined", true).redirect("/index.html");
                     return;
                 }
-
-                HttpResponse response = HttpResponse.redirect("/index.html")
-                        .addCookie("logined", false)
-                        .build();
-                dos.writeBytes(response.toString());
+                response.addCookie("logined", false).redirect("/index.html");
                 return;
             }
 
@@ -100,56 +94,25 @@ public class RequestHandler extends Thread {
 
                 String domString = new Templater("./webapp/user/list.html")
                         .addObject("users", userElements.toString()).template();
-                HttpResponse response = HttpResponse.ok()
-                        .header(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8")
+                response.contentType(ContentType.TEXT_HTML_UTF8)
                         .body(domString)
-                        .build();
-                System.out.println(response.toString());
-                dos.writeBytes(response.toString());
+                        .ok();
                 return;
             }
 
             if (request.getMethod() == HttpMethod.GET && webAppFilePathes.containsKey(request.getPath())) {
-                byte[] content = Files.readAllBytes(webAppFilePathes.get(request.getPath()));
-                response200(dos, content, request.getHeader("Accept"));
+                response.contentType(request.getHeader("Accept"))
+                        .forward(webAppFilePathes.get(request.getPath()));
                 return;
             }
 
 
-            HttpResponse response = HttpResponse.notFound()
-                    .header(HttpHeader.CONTENT_TYPE, "text/html")
+            response.header(HttpHeader.CONTENT_TYPE, "text/html")
                     .body("Not Found")
-                    .build();
-            dos.writeBytes(response.toString());
+                    .notFound();
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
         }
-    }
-
-    private void response(DataOutputStream dos, HttpStatus status, byte[] body, Pair... headers) {
-        try {
-            dos.writeBytes("HTTP/1.1 " + status + "\r\n");
-            for (Pair header : headers) {
-                dos.writeBytes(header.getKey() + ": " + header.getValue() + "\r\n");
-            }
-            dos.writeBytes("\r\n");
-            if (body != null) {
-                dos.write(body, 0, body.length);
-            }
-            dos.flush();
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    private void response200(DataOutputStream dos, byte[] body, String contentType) {
-        response(
-                dos,
-                HttpStatus.OK,
-                body,
-                Pair.of("Content-Type", contentType),
-                Pair.of("Content-Length", Integer.toString(body.length))
-        );
     }
 }

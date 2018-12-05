@@ -3,17 +3,19 @@ package template;
 import com.google.common.collect.Maps;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Templater {
     private String contents;
     private Map<String, String> tagMap;
 
     public Templater(String path) throws IOException {
-        this.contents = new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
+        this.contents = new String(Files.readAllBytes(Paths.get(path)), UTF_8);
+        System.out.println(contents);
         this.tagMap = Maps.newHashMap();
     }
 
