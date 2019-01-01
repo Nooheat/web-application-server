@@ -1,4 +1,4 @@
-package http;
+package in.study.http;
 
 public enum ContentType {
     TEXT_HTML_UTF8("text/html; charset=utf-8"),

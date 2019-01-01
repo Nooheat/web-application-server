@@ -1,4 +1,4 @@
-package http;
+package in.study.http;
 
 public enum HttpHeader {
     CONTENT_TYPE("Content-Type"),

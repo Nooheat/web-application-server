@@ -1,4 +1,4 @@
-package webserver;
+package in.study.webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

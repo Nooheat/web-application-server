@@ -1,11 +1,14 @@
-package webserver;
+package in.study.webserver;
 
-import db.DataBase;
-import http.*;
-import model.User;
+import in.study.controller.ControllerMethod;
+import in.study.db.DataBase;
+import in.study.http.HttpHeader;
+import in.study.http.HttpMethod;
+import in.study.http.HttpRequest;
+import in.study.http.HttpResponse;
+import in.study.util.RequestMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import template.Templater;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,9 +18,8 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -56,14 +58,21 @@ public class RequestHandler extends Thread {
             HttpRequest request = HttpRequest.of(in);
             HttpResponse response = HttpResponse.of(out);
 
+            RequestMetadata metadata = request.getMetadata();
 
-            if ("/user/create".equals(request.getPath()) && request.getMethod() == HttpMethod.POST) {
-                User user = new User(request.getParam("userId"), request.getParam("password"),
-                        request.getParam("name"), request.getParam("email"));
-                DataBase.addUser(user);
-                response.redirect("/index.html");
+            Optional<ControllerMethod> controllerMethod = ControllerContainer.findControllerMethod(metadata);
+            if (controllerMethod.isPresent()) {
+                controllerMethod.get().run(request, response);
                 return;
             }
+
+//            if ("/user/create".equals(request.getPath()) && request.getMethod() == HttpMethod.POST) {
+//                User user = new User(request.getParam("userId"), request.getParam("password"),
+//                        request.getParam("name"), request.getParam("email"));
+//                DataBase.addUser(user);
+//                response.redirect("/index.html");
+//                return;
+//            }
 
             if ("/user/login".equals(request.getPath()) && request.getMethod() == HttpMethod.POST) {
                 boolean loginSucceed = DataBase.findUserById(request.getParam("userId"))
@@ -77,29 +86,7 @@ public class RequestHandler extends Thread {
                 return;
             }
 
-            if ("/user/list".equals(request.getPath()) && request.getMethod() == HttpMethod.GET) {
-                List<User> users = new ArrayList<>(DataBase.findAll());
-                StringBuilder userElements = new StringBuilder();
-                for (int i = 0; i < users.size(); i++) {
-                    User user = users.get(i);
-
-                    userElements.append("<tr>\n");
-                    userElements.append("   <th scope=\"row\">" + (i + 1) + "</th>");
-                    userElements.append("   <td>" + users.get(i).getUserId() + "</td>");
-                    userElements.append("   <td>" + user.getName() + "</td>");
-                    userElements.append("   <td>" + user.getEmail() + "</td>");
-                    userElements.append("   <td><a href=\"#\" class=\"btn btn-success\" role=\"button\">수정</a></td>\n");
-                    userElements.append("</tr>\n");
-                }
-
-                String domString = new Templater("./webapp/user/list.html")
-                        .addObject("users", userElements.toString()).template();
-                response.contentType(ContentType.TEXT_HTML_UTF8)
-                        .body(domString)
-                        .ok();
-                return;
-            }
-
+            // TODO controllerContainer로!!
             if (request.getMethod() == HttpMethod.GET && webAppFilePathes.containsKey(request.getPath())) {
                 response.contentType(request.getHeader("Accept"))
                         .forward(webAppFilePathes.get(request.getPath()));

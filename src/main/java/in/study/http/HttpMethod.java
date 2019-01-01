@@ -1,4 +1,4 @@
-package http;
+package in.study.http;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -8,7 +8,8 @@ public enum HttpMethod {
     GET,
     PUT,
     DELETE,
-    PATCH;
+    PATCH,
+    HEAD;
 
     public static Optional<HttpMethod> valueFrom(String method) {
         return Arrays.stream(values()).filter(httpMethod -> httpMethod.name().equals(method)).findFirst();

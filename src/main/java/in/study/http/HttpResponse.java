@@ -1,4 +1,4 @@
-package http;
+package in.study.http;
 
 import com.google.common.collect.Maps;
 
@@ -86,6 +86,7 @@ public class HttpResponse<T> {
             writeHeaders();
             writeBody();
             dos.flush();
+            dos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

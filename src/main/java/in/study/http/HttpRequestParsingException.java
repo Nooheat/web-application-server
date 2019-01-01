@@ -1,4 +1,4 @@
-package http;
+package in.study.http;
 
 public class HttpRequestParsingException extends Exception {
 

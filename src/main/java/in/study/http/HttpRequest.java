@@ -1,9 +1,10 @@
-package http;
+package in.study.http;
 
 import com.google.common.collect.Maps;
-import util.HttpRequestUtils;
-import util.IOUtils;
-import util.Pair;
+import in.study.util.HttpRequestUtils;
+import in.study.util.IOUtils;
+import in.study.util.Pair;
+import in.study.util.RequestMetadata;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,12 +13,11 @@ import java.io.InputStreamReader;
 import java.util.Map;
 
 public class HttpRequest {
-    private String path;
-    private HttpMethod method;
     private Map<String, String> queries;
     private Map<String, String> cookies;
     private Map<String, String> headers;
     private Map<String, String> body;
+    private RequestMetadata metadata;
 
     private HttpRequest(InputStream in) throws HttpRequestParsingException {
         try {
@@ -33,7 +33,7 @@ public class HttpRequest {
         parsePathAndMethod(br);
         parseHeaders(br);
         parseCookies();
-        if (!(this.method == HttpMethod.GET)) {
+        if (!(this.metadata.getMethod() == HttpMethod.GET)) {
             parseBody(br);
         }
     }
@@ -44,7 +44,7 @@ public class HttpRequest {
 
     private void parseBody(BufferedReader br) throws IOException {
         body = HttpRequestUtils.parsePayload(
-                IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")))
+                IOUtils.readData(br, Integer.parseInt(getHeader(HttpHeader.CONTENT_LENGTH)))
         );
     }
 
@@ -52,16 +52,18 @@ public class HttpRequest {
         String urlAndMethodLine = br.readLine();
         String[] splited = urlAndMethodLine.split(" ", 3);
 
-        method = HttpMethod.valueFrom(splited[0]).orElseThrow(HttpRequestParsingException::new);
+        HttpMethod method = HttpMethod.valueFrom(splited[0]).orElseThrow(HttpRequestParsingException::new);
 
         if (HttpRequestUtils.hasQueryString(splited[1])) {
             int index = splited[1].indexOf("?");
-            path = splited[1].substring(0, index);
+            String path = splited[1].substring(0, index);
+            this.metadata = new RequestMetadata(method, path);
             queries = HttpRequestUtils.parsePayload(path.substring(index + 1));
             return;
         }
 
-        path = splited[1];
+        String path = splited[1];
+        this.metadata = new RequestMetadata(method, path);
         queries = Maps.newHashMap();
     }
 
@@ -82,11 +84,11 @@ public class HttpRequest {
     }
 
     public String getPath() {
-        return path;
+        return metadata.getPath();
     }
 
     public HttpMethod getMethod() {
-        return method;
+        return metadata.getMethod();
     }
 
     public String getQuery(String key) {
@@ -103,5 +105,9 @@ public class HttpRequest {
 
     public String getParam(String key) {
         return body.get(key);
+    }
+
+    public RequestMetadata getMetadata() {
+        return metadata;
     }
 }

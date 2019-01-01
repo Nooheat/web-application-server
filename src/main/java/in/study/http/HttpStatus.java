@@ -1,4 +1,4 @@
-package http;
+package in.study.http;
 
 public enum HttpStatus {
     OK(200, "200 OK"),

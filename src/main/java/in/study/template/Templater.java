@@ -1,4 +1,4 @@
-package template;
+package in.study.template;
 
 import com.google.common.collect.Maps;
 
