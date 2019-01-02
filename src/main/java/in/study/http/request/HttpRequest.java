@@ -1,10 +1,12 @@
-package in.study.http;
+package in.study.http.request;
 
 import com.google.common.collect.Maps;
+import in.study.http.HttpHeader;
+import in.study.http.session.HttpSession;
+import in.study.http.session.HttpSessions;
 import in.study.util.HttpRequestUtils;
 import in.study.util.IOUtils;
 import in.study.util.Pair;
-import in.study.util.RequestMetadata;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,6 +20,7 @@ public class HttpRequest {
     private Map<String, String> headers;
     private Map<String, String> body;
     private RequestMetadata metadata;
+    private HttpSession session;
 
     private HttpRequest(InputStream in) throws HttpRequestParsingException {
         try {
@@ -33,9 +36,14 @@ public class HttpRequest {
         parsePathAndMethod(br);
         parseHeaders(br);
         parseCookies();
+        getSession();
         if (!(this.metadata.getMethod() == HttpMethod.GET)) {
             parseBody(br);
         }
+    }
+
+    private void getSession() {
+        this.session = HttpSessions.getSession(cookies.get("JSESSIONID"));
     }
 
     private void parseCookies() {

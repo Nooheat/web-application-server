@@ -1,6 +1,8 @@
-package in.study.http;
+package in.study.http.response;
 
 import com.google.common.collect.Maps;
+import in.study.http.ContentType;
+import in.study.http.HttpHeader;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

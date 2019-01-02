@@ -1,7 +1,7 @@
-package in.study.controller;
+package in.study.http.processing;
 
-import in.study.http.HttpRequest;
-import in.study.http.HttpResponse;
+import in.study.http.request.HttpRequest;
+import in.study.http.response.HttpResponse;
 
 import java.lang.reflect.InvocationTargetException;
 

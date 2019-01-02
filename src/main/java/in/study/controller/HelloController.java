@@ -1,9 +1,10 @@
 package in.study.controller;
 
-import in.study.http.HttpMethod;
-import in.study.http.HttpRequest;
-import in.study.http.HttpResponse;
-import in.study.util.RequestMapping;
+import in.study.http.processing.Controller;
+import in.study.http.request.HttpMethod;
+import in.study.http.request.HttpRequest;
+import in.study.http.response.HttpResponse;
+import in.study.http.request.RequestMapping;
 
 @Controller
 public class HelloController {

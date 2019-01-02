@@ -1,6 +1,4 @@
-package in.study.util;
-
-import in.study.http.HttpMethod;
+package in.study.http.request;
 
 import java.util.Objects;
 

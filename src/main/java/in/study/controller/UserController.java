@@ -2,12 +2,13 @@ package in.study.controller;
 
 import in.study.db.DataBase;
 import in.study.http.ContentType;
-import in.study.http.HttpMethod;
-import in.study.http.HttpRequest;
-import in.study.http.HttpResponse;
+import in.study.http.processing.Controller;
+import in.study.http.request.HttpMethod;
+import in.study.http.request.HttpRequest;
+import in.study.http.response.HttpResponse;
 import in.study.model.User;
 import in.study.template.Templater;
-import in.study.util.RequestMapping;
+import in.study.http.request.RequestMapping;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,18 @@ public class UserController {
                 request.getParam("name"), request.getParam("email"));
         DataBase.addUser(user);
         response.redirect("/index.html");
+    }
+
+    @RequestMapping(path = "/user/login", method = HttpMethod.POST)
+    public void login(HttpRequest request, HttpResponse response) {
+        boolean loginSucceed = DataBase.findUserById(request.getParam("userId"))
+                .filter(user -> user.matchPassword(request.getParam("password")))
+                .isPresent();
+        if (loginSucceed) {
+            response.addCookie("logined", true).redirect("/index.html");
+            return;
+        }
+        response.addCookie("logined", false).redirect("/index.html");
     }
 
     @RequestMapping(path = "/user/list", method = HttpMethod.GET)

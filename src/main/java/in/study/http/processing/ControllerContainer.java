@@ -1,10 +1,9 @@
-package in.study.webserver;
+package in.study.http.processing;
 
 import com.google.common.collect.Maps;
-import in.study.controller.Controller;
-import in.study.controller.ControllerMethod;
-import in.study.util.RequestMapping;
-import in.study.util.RequestMetadata;
+import in.study.http.request.RequestMapping;
+import in.study.http.request.RequestMetadata;
+import in.study.util.AnnotationScanner;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -13,6 +12,7 @@ import java.util.Optional;
 
 public class ControllerContainer {
     private static Map<RequestMetadata, ControllerMethod> controllerMap;
+    private static ControllerMethod defaultControllerMethod = DefaultControllerMethod.getInstance();
 
     static {
         try {
@@ -39,5 +39,9 @@ public class ControllerContainer {
 
     public static Optional<ControllerMethod> findControllerMethod(RequestMetadata metadata) {
         return Optional.ofNullable(controllerMap.get(metadata));
+    }
+
+    public static ControllerMethod getControllerMethodOrDefault(RequestMetadata metadata) {
+        return findControllerMethod(metadata).orElse(defaultControllerMethod);
     }
 }

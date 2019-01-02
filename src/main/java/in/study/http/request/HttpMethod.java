@@ -1,4 +1,4 @@
-package in.study.http;
+package in.study.http.request;
 
 import java.util.Arrays;
 import java.util.Optional;
